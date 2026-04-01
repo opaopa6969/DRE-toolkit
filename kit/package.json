@@ -1,0 +1,40 @@
+{
+  "name": "@unlaxer/askos-toolkit",
+  "version": "0.1.0",
+  "description": "AskOS toolkit — agents, rules, skills, and document structure for AskOS projects",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xxx/AskOS-toolkit"
+  },
+  "keywords": [
+    "askos",
+    "agents",
+    "rules",
+    "skills",
+    "claude-code",
+    "llm"
+  ],
+  "bin": {
+    "askos-install": "./install.sh",
+    "askos-update": "./update.sh",
+    "askos-tool": "./bin/askos-tool.js"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "version.txt",
+    "characters/",
+    "templates/",
+    "skills/",
+    "flows/",
+    "bin/",
+    "install.sh",
+    "update.sh",
+    "samples/"
+  ],
+  "scripts": {
+    "test": "node test/askos-tool.test.js",
+    "postinstall": "node -e \"console.log('\\n  AskOS toolkit installed.\\n  Run: npx askos-install\\n  to set up askos/ and .claude/skills/ in your project.\\n')\""
+  }
+}
