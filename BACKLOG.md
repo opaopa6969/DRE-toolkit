@@ -11,4 +11,5 @@
 
 ## 将来
 - [ ] npm keyword `claude-config` での publishing
-- [ ] cross-tool 変換（Cursor rules、AGENTS.md）
+- [ ] cross-tool 変換 — `dre-tool export --cursor` / `--codex` / `--gemini`（DRE rules を正典にして各ツール形式に変換）
+- [ ] スキルカタログ — `kit/skills/catalog.md`（awesome のインデックスを内側に持つ）
