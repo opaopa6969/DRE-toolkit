@@ -116,6 +116,7 @@ Commands:
   status     インストール状態とバージョンを表示
   list       kit に含まれるファイル一覧
   save <file>           stdin をファイルに保存
+  effective-sm          現在の state machine を Mermaid で表示
   install-plugin <yaml> plugin manifest を state-machine.yaml に merge
   version               バージョン表示
   help                  このヘルプを表示
@@ -132,6 +133,111 @@ function findDreDir() {
     if (fs.existsSync(dir)) return dir;
   }
   return null;
+}
+
+function parseStateMachineYaml(content) {
+  const phases = [];
+  const lines = content.split('\n');
+  let current = null;
+  for (const line of lines) {
+    const idMatch = line.match(/^  - id: (.+)/);
+    if (idMatch) {
+      if (current) phases.push(current);
+      current = { id: idMatch[1].trim(), next: null, plugins_before: [], plugins_after: [] };
+      continue;
+    }
+    if (!current) continue;
+    const nextMatch = line.match(/^    next: (.+)/);
+    if (nextMatch) current.next = nextMatch[1].trim() === 'null' ? null : nextMatch[1].trim();
+    const pbMatch = line.match(/^    plugins_before: \[(.*)]/);
+    if (pbMatch && pbMatch[1]) current.plugins_before = pbMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+    const paMatch = line.match(/^    plugins_after: \[(.*)]/);
+    if (paMatch && paMatch[1]) current.plugins_after = paMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+  }
+  if (current) phases.push(current);
+  return phases;
+}
+
+function cmdEffectiveSm() {
+  const dreDir = findDreDir() || '.dre';
+  const smPath = path.join(dreDir, 'state-machine.yaml');
+  if (!fs.existsSync(smPath)) {
+    console.error(`ERROR: ${smPath} not found. Run dre-install first.`);
+    process.exit(1);
+  }
+
+  const phases = parseStateMachineYaml(fs.readFileSync(smPath, 'utf8'));
+
+  const lines = ['```mermaid', 'flowchart LR'];
+
+  // node 定義
+  for (const phase of phases) {
+    const label = phase.id.replace(/_/g, ' ');
+    lines.push(`  ${phase.id}([${label}])`);
+  }
+
+  // plugin before/after を intermediate node として展開
+  for (const phase of phases) {
+    // plugins_before: phase の前に挿入
+    let prev = null;
+    for (const plugin of phase.plugins_before) {
+      const nodeId = `plugin_${plugin}_before_${phase.id}`;
+      lines.push(`  ${nodeId}{{${plugin}}}`);
+      if (prev) {
+        lines.push(`  ${prev} --> ${nodeId}`);
+      }
+      prev = nodeId;
+    }
+
+    if (phase.plugins_before.length > 0) {
+      // 前のフェーズから最初の before plugin へ
+      const prevPhase = phases.find(p => p.next === phase.id);
+      if (prevPhase) {
+        const firstBefore = `plugin_${phase.plugins_before[0]}_before_${phase.id}`;
+        // prevPhase → firstBefore → phase の順に書き換え
+        // (after プラグインと合わせて下で処理)
+      }
+      const lastBefore = `plugin_${phase.plugins_before[phase.plugins_before.length - 1]}_before_${phase.id}`;
+      lines.push(`  ${lastBefore} --> ${phase.id}`);
+    }
+
+    // plugins_after: phase の後に挿入
+    let afterPrev = phase.id;
+    for (const plugin of phase.plugins_after) {
+      const nodeId = `plugin_${plugin}_after_${phase.id}`;
+      lines.push(`  ${nodeId}{{${plugin}}}`);
+      lines.push(`  ${afterPrev} --> ${nodeId}`);
+      afterPrev = nodeId;
+    }
+
+    // next フェーズへの接続
+    if (phase.next) {
+      const nextPhase = phases.find(p => p.id === phase.next);
+      if (nextPhase && nextPhase.plugins_before.length > 0) {
+        // next フェーズに before plugin があれば、まず before plugin へ
+        const firstBefore = `plugin_${nextPhase.plugins_before[0]}_before_${nextPhase.id}`;
+        lines.push(`  ${afterPrev} --> ${firstBefore}`);
+      } else {
+        lines.push(`  ${afterPrev} --> ${phase.next}`);
+      }
+    }
+  }
+
+  // loop_until のフェーズには自己ループを追加（state-machine.yaml に loop_until があれば）
+  // plugin node にループバックエッジを追加
+  const smRaw = fs.readFileSync(smPath, 'utf8');
+  if (smRaw.includes('loop_until')) {
+    // after plugin は完了したら元のフェーズに戻れることを示す
+    for (const phase of phases) {
+      for (const plugin of phase.plugins_after) {
+        const nodeId = `plugin_${plugin}_after_${phase.id}`;
+        lines.push(`  ${nodeId} -->|loop| ${phase.id}`);
+      }
+    }
+  }
+
+  lines.push('```');
+  console.log(lines.join('\n'));
 }
 
 function cmdInstallPlugin() {
@@ -249,6 +355,9 @@ switch (command) {
   case '-v':
   case '--version':
     cmdVersion();
+    break;
+  case 'effective-sm':
+    cmdEffectiveSm();
     break;
   case 'install-plugin':
     cmdInstallPlugin();

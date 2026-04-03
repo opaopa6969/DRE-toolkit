@@ -21,7 +21,7 @@ phases:
   - id: review
     next: release
     plugins_before: []
-    plugins_after: []
+    plugins_after: [dde]
 
   - id: release
     next: null
