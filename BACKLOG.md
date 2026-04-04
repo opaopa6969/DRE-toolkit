@@ -1,23 +1,46 @@
-# BACKLOG
+# BACKLOG — DRE-toolkit
 
-## Inbox（未分類・思いついたこと）
+> 最終更新: 2026-04-04
+> バージョン: v0.5.0
 
-<!-- ここは気軽に投げ込む場所。整理・優先度付けは後でいい。 -->
+## 完了済み
 
-- [ ] PR レビュー対応フロー — `/pulls/{pr}/reviews`（レビュー本文）を含む3エンドポイント取得をルール化する。参考: `docs/articles/github-pr-comment-fetch.md`
+- ✅ install.sh 実装（`.claude/` へのコピー）
+- ✅ update.sh 実装（カスタマイズ保護、新規ファイルのみ追加）
+- ✅ .dre-manifest 生成（ファイル一覧 + sha256）
+- ✅ dre-reset.md — ファイル単位リセット（CUSTOMIZED → INSTALLED）
+- ✅ dre-uninstall.md — アンインストール（any → FRESH）
+- ✅ dxe-command.md — dxe update/install/status をそのまま実行
+- ✅ dre-activate.md — スキル有効化・無効化（skills/disabled/ 方式）
+- ✅ rules/dre-skill-control.md — disabled/ スキル無視ルール
+- ✅ update.sh: disabled/ のファイルも更新
+- ✅ トリガー競合解消（dre-update.md を dxe-command.md に統合）
 
 ---
 
-## v0.2.0
-- [ ] extends 的な継承機構の設計
-- [ ] install.sh の実装（`~/.claude/` vs `.claude/` 選択）
-- [ ] kit/bin/dre-tool.js の実装
+## P0: すぐやる
 
-## v0.3.0
-- [ ] update.sh の実装（既存ファイルとのマージ戦略）
-- [ ] AskOS rules/skills/commands の kit への収録
+| # | タスク | 出典 | 種類 |
+|---|--------|------|------|
+| 1 | **dre-session.md 作成** — 「DRE して」の挙動定義。.claude/ 現状診断 → 番号付きアクション提案 | DGE session 2026-04-04 | 実装 |
+| 2 | **Layer 3: dxe update 時に CLAUDE.md のスキル索引を自動再生成** — 手動索引は腐るため | DGE session skills過多 | 設計+実装 |
 
-## 将来
-- [ ] npm keyword `claude-config` での publishing
-- [ ] cross-tool 変換 — `dre-tool export --cursor` / `--codex` / `--gemini`（DRE rules を正典にして各ツール形式に変換）
-- [ ] スキルカタログ — `kit/skills/catalog.md`（awesome のインデックスを内側に持つ）
+## P1: 設計が要る
+
+| # | タスク | 出典 | 種類 |
+|---|--------|------|------|
+| 3 | **ユースケース定義** — プロファイル設計の前提。A:チーム設定統一 B:DxE管理 C:自作rules配布 | DGE Gap #4 | 設計 |
+| 4 | **extends 的な継承機構** — 親パッケージの設定を extends して差分だけ上書き | BACKLOG旧 | 設計+実装 |
+| 5 | **kit/bin/dre-tool.js の実装** — status / list / activate / deactivate を CLI で | BACKLOG旧 | 実装 |
+
+## P2: 将来
+
+| # | タスク | 出典 | 種類 |
+|---|--------|------|------|
+| 6 | **cross-tool 変換** — `dre-tool export --cursor / --codex / --gemini` | BACKLOG旧 | 設計+実装 |
+| 7 | **スキルカタログ** — `kit/skills/catalog.md`（awesome のインデックスを内側に持つ） | BACKLOG旧 | コンテンツ |
+| 8 | **npm keyword `claude-config` での publishing** | BACKLOG旧 | マーケティング |
+
+## Inbox（未分類）
+
+- [ ] PR レビュー対応フロー — `/pulls/{pr}/reviews`（レビュー本文）を含む3エンドポイント取得をルール化する
