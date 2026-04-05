@@ -44,3 +44,37 @@
 ## Inbox（未分類）
 
 - [ ] PR レビュー対応フロー — `/pulls/{pr}/reviews`（レビュー本文）を含む3エンドポイント取得をルール化する
+
+### BACKLOG-FORMAT: Readiness / Depends / Spec 情報の追加
+
+**Added:** 2026-04-05
+**出典:** volta-platform AUTH 系 backlog の実装可否判定作業
+**種類:** 設計 (DGE) → 実装 (DRE)
+
+**Problem:**
+現在の `backlog-management.md` フォーマットは `Status | Design | Depends on` の3列。
+実プロジェクト（volta-platform��で AUTH 系 9 件を一括着手しようとした際、以下が分からなかった:
+
+1. **Readiness** — DB/API/UI どこまで実装済みか、spec があるか（🟢 ready / 🟡 needs-work / 🔴 blocked）
+2. **Repo** — マルチリポジトリ構成でどのリ���ジトリが対象か
+3. **DGE session** — 設計済みかどうか、どの DGE session が対応するか
+4. **依存関係の詳細** — 「AUTH-005 は AUTH-003 と AUTH-006 に blocked」のような依存グラフ
+
+結果、全件の readiness を手動で調査する必要があった（DGE session 読み、コード探索、DB スキーマ確認）。
+
+**Goal:**
+- `backlog-management.md` のアイテムフォーマットを拡張して readiness が一目で分かるようにする
+- DGE session が backlog アイテムを生成/更新する際の出力フォーマットも連動させる
+- DRE の backlog ↔ DGE の session output のデータフローを定義する
+
+**DGE に投げるべき設計質問:**
+- Readiness の粒度（2段階 vs 3段階 vs マトリクス）
+- マルチリポジトリ構成での Repo フィールドの持ち方
+- DGE session → backlog item 生成の自動化フロー
+- 既存フォーマットとの後方互換
+
+**期待するフロー:**
+1. DRE が DGE に「backlog フォーマット拡張」の設計セッションを依頼
+2. DGE がキャラクター劇で設計の穴を探る
+3. DGE output → spec
+4. DRE が spec を元に `backlog-management.md` と DGE 出力テンプレートを更新
